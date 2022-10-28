@@ -1,149 +1,97 @@
-from telegram import Update, Bot
-from telegram.ext import Updater, CommandHandler, Filters, MessageHandler, ConversationHandler
-import random
+from telegram import Bot, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
 
 
-TOKEN = '5640694856:AAFUc0CClPQ1YWcdDp6eCAA4yjhXtJPo_QY'
-bot = Bot(token=TOKEN)
-updater = Updater(token = TOKEN, use_context=True)
+bot = Bot(token='5640694856:AAFUc0CClPQ1YWcdDp6eCAA4yjhXtJPo_QY')
+updater = Updater(token='5606526865:AAGFAtNAAJeOsjIVk-6X5BmmXrGxnk6bNFs')
 dispatcher = updater.dispatcher
 
 
+start = 0
+number_first = 1
+number_second = 2
+operation = 3
+result = 4
+numberOne = ''
+numberTwo = ''
+oper = ''
+
+
+def numbers(number):
+    try:
+        return int(number)
+    except:
+        return complex(number.replace(' ', ''))
+
+
+def result(x, y, z):
+    if z == '0':
+        return x + y
+    elif z == '1':
+        return x - y
+    elif z == '2':
+        return x * y
+    return x / y
+
+
 def start(update, context):
-  context.bot.send_message(update.effective_chat.id, "Привет!Я - умный калькулятор. Я умею работать с "
-                                                     "рациональными и комплексными числами.Введите команду /racional,"
-                                                     "если хотите считать рациональные числа или /komplex,если будем считать комплексные")
+    context.bot.send_message(update.effective_chat.id, 'Добро пожаловать в бота, который умеет '
+                                                       'считать комплексные и рациональные числа! Напиши 2 числа\n'
+                                                       'Введи первое число: ')
+
+    return number_first
 
 
-def racional_calc(update, context):
-    context.bot.send_message(update.effective_chat.id, "Отлично! Вы выбрали рациональные числа.Введите первое число: ")
-    return "rac"
+def numberFirst(update, context):
+    global numberOne
+    numberOne = numbers(update.message.text)
+    context.bot.send_message(update.effective_chat.id,
+                             'Отлично!\nВведи второе число: ')
+
+    return number_second
 
 
-def racional_1(update, context):
-    global rac_chislo_1
-    rac_chislo_1 = int(update.message.text)
-    context.bot.send_message(update.effective_chat.id, "Введите второе число: ")
-    return "rac_1"
+def numberSecond(update, context):
+    global numberTwo
+    numberTwo = numbers(update.message.text)
+    board = [[InlineKeyboardButton('+', callback_data='0'), InlineKeyboardButton('-', callback_data='1')],
+             [InlineKeyboardButton('*', callback_data='2'), InlineKeyboardButton(':', callback_data='3')]]
+    update.message.reply_text(
+        'Выбери:', reply_markup=InlineKeyboardMarkup(board))
 
-def racional_2(update, context):
-    global rac_chislo_2
-    rac_chislo_2 = int(update.message.text)
-    context.bot.send_message(update.effective_chat.id, "Введите действие: ")
-    return "rac_2"
-
-def podschet(update, context):
-    global result
-    result = 0
-    d = update.message.text
-    if d == "+":
-        result = rac_chislo_1 + rac_chislo_2
-        context.bot.send_message(update.effective_chat.id,f' "Результат:  " {result} ')
-    if d == "-":
-        result = rac_chislo_1 - rac_chislo_2
-        context.bot.send_message(update.effective_chat.id,f' "Результат:  " {result} ')
-    if d == "/":
-        result = rac_chislo_1 / rac_chislo_2
-        context.bot.send_message(update.effective_chat.id,f' "Результат:  " {result} ')
-    if d == "*":
-        result = rac_chislo_1 * rac_chislo_2
-        context.bot.send_message(update.effective_chat.id,f' "Результат:  " {result} ')
-    return ConversationHandler.END
+    return operation
 
 
+def operation(update, context):
+    global res
 
-def komplex_calc(update, context):
-  context.bot.send_message(update.effective_chat.id, "Вы выбрали комплексные числа. Напомню формулу комплексного числа: z = x + i y,"
-                                                       " где x, y – действительные числа,"
-                                                      "i − так называемая мнимая единица. Введи действительную часть первого числа: ")
-  return "komplex"
-
-
-def chislo_1_otvet_1(update, context):
-  global  deistv_chast
-  deistv_chast = int(update.message.text)
-  context.bot.send_message(update.effective_chat.id, "Принято!Теперь введи мнимую часть числа")
-  return "knopka_2"
-
-
-
-def chislo_1_otvet_2(update, context):
-   global  mnim_chast
-   mnim_chast = int(update.message.text)
-   context.bot.send_message(update.effective_chat.id,f'{"Отлично!Первое число готово.Я понял так: "+ str(deistv_chast) + "+" + str(mnim_chast) + "i", "Теперь введи второе число,сначала его действительную часть: "}')
-   return "knopka_3"
-
-def chislo_2_otvet_1(update, context):
-   global  d_chast
-   d_chast = int(update.message.text)
-   context.bot.send_message(update.effective_chat.id, "Принято!Теперь введи мнимую часть числа")
-   return "knopka_4"
-
-def chislo_2_otvet_2(update, context):
-   global  m_chast
-   m_chast = int(update.message.text)
-   context.bot.send_message(update.effective_chat.id,f'{"Отлично!Второе число готово.Я понял так: " + str(d_chast) + "+" + str(m_chast) + "i","Введите действие: "}')
-   return "knopka_5"
-
-def deistvie(update, context):
-   global  d_chast
-   global  deistv_chast
-   global m_chast
-   global mnim_chast
-   deis = update.message.text
-   if deis == "+":
-       sum_d = int(deistv_chast + d_chast)
-       sum_m = int(mnim_chast + m_chast)
-       context.bot.send_message(update.effective_chat.id, f'{"У меня получилось: "  + str(sum_d) + "+" + str(sum_m) + "i"}')
-   if deis == "-":
-       razn_d = int(deistv_chast - d_chast)
-       razn_m = int(mnim_chast - m_chast)
-       context.bot.send_message(update.effective_chat.id, f'{"У меня получилось: "  + str(razn_d) + "+" + str(razn_m) + "i"}')
-   return ConversationHandler.END
-
+    que = update.callback_query
+    var = que.data
+    que.answer()
+    res = result(numberOne, numberTwo, var)
+    que.edit_message_text(text=f'Результат: {res}')
 
 
 def cancel(update, context):
+    context.bot.send_message(update.effective_chat.id, 'Прощай!')
+
     return ConversationHandler.END
 
 
-
 start_handler = CommandHandler('start', start)
-racional_calc_handler = CommandHandler('racional', racional_calc)
-racional_1_handler = MessageHandler(Filters.text, racional_1)
-racional_2_handler = MessageHandler(Filters.text, racional_2)
-podschet_handler = MessageHandler(Filters.text, podschet)
-komplex_calc_handler = CommandHandler('komplex', komplex_calc)
-first_handler = MessageHandler(Filters.text, chislo_1_otvet_1)
-second_handler = MessageHandler(Filters.text, chislo_1_otvet_2)
-third_handler = MessageHandler(Filters.text, chislo_2_otvet_1)
-fourth_handler = MessageHandler(Filters.text, chislo_2_otvet_2)
-deistvie_handler = MessageHandler(Filters.text, deistvie)
 cancel_handler = CommandHandler('cancel', cancel)
-conv_rac_handler = ConversationHandler(entry_points=[racional_calc_handler],
-                                          states={
-                                               "rac": [racional_1_handler],
-                                               "rac_1": [racional_2_handler],
-                                               "rac_2": [podschet_handler],
+numone_handler = MessageHandler(Filters.text, numberFirst)
+numtwo_handler = MessageHandler(Filters.text, numberSecond)
+oper_handler = CallbackQueryHandler(operation)
+conv_handler = ConversationHandler(entry_points=[start_handler],
+                                   states={
+                                       number_first: [numone_handler],
+                                       number_second: [numtwo_handler],
+                                       operation: [oper_handler],
+},
+    fallbacks=[cancel_handler])
 
-                                          },
-                                          fallbacks=[cancel_handler]
-                                   )
-
-conv_komplex_handler = ConversationHandler(entry_points=[komplex_calc_handler],
-                                          states={
-                                               "komplex": [first_handler],
-                                               "knopka_2": [second_handler],
-                                               "knopka_3": [third_handler],
-                                               "knopka_4": [fourth_handler],
-                                               "knopka_5": [deistvie_handler],
-
-                                          },
-                                          fallbacks=[cancel_handler]
-                                   )
-dispatcher.add_handler(start_handler)
-dispatcher.add_handler(conv_rac_handler)
-dispatcher.add_handler(conv_komplex_handler)
-
+dispatcher.add_handler(conv_handler)
+print('server start')
 updater.start_polling()
 updater.idle()
